@@ -1,13 +1,226 @@
 pragma solidity 0.4.24;
 
-import './zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
-import './zeppelin-solidity/contracts/math/SafeMath.sol';
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that throw on error
+ */
+library SafeMath {
+
+  /**
+  * @dev Multiplies two numbers, throws on overflow.
+  */
+  function mul(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    if (a == 0) {
+      return 0;
+    }
+    c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+  * @dev Integer division of two numbers, truncating the quotient.
+  */
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    // uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return a / b;
+  }
+
+  /**
+  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  */
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+  * @dev Adds two numbers, throws on overflow.
+  */
+  function add(uint256 a, uint256 b) internal pure returns (uint256 c) {
+    c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
+
+
+/**
+ * @title ERC20Basic
+ * @dev Simpler version of ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/179
+ */
+contract ERC20Basic {
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address who) public view returns (uint256);
+  function transfer(address to, uint256 value) public returns (bool);
+  event Transfer(address indexed from, address indexed to, uint256 value);
+}
+
+
+
+/**
+ * @title ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/20
+ */
+contract ERC20 is ERC20Basic {
+  function allowance(address owner, address spender) public view returns (uint256);
+  function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function approve(address spender, uint256 value) public returns (bool);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+
+
+
+/**
+ * @title Basic token
+ * @dev Basic version of StandardToken, with no allowances.
+ */
+contract BasicToken is ERC20Basic {
+  using SafeMath for uint256;
+
+  mapping(address => uint256) balances;
+
+  uint256 totalSupply_;
+
+  /**
+  * @dev total number of tokens in existence
+  */
+  function totalSupply() public view returns (uint256) {
+    return totalSupply_;
+  }
+
+  /**
+  * @dev transfer token for a specified address
+  * @param _to The address to transfer to.
+  * @param _value The amount to be transferred.
+  */
+  function transfer(address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0));
+    require(_value <= balances[msg.sender]);
+
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    emit Transfer(msg.sender, _to, _value);
+    return true;
+  }
+
+  /**
+  * @dev Gets the balance of the specified address.
+  * @param _owner The address to query the the balance of.
+  * @return An uint256 representing the amount owned by the passed address.
+  */
+  function balanceOf(address _owner) public view returns (uint256) {
+    return balances[_owner];
+  }
+
+}
+
+
+/**
+ * @title Standard ERC20 token
+ *
+ * @dev Implementation of the basic standard token.
+ * @dev https://github.com/ethereum/EIPs/issues/20
+ * @dev Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
+ */
+contract StandardToken is ERC20, BasicToken {
+
+  mapping (address => mapping (address => uint256)) internal allowed;
+
+
+  /**
+   * @dev Transfer tokens from one address to another
+   * @param _from address The address which you want to send tokens from
+   * @param _to address The address which you want to transfer to
+   * @param _value uint256 the amount of tokens to be transferred
+   */
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
+    require(_to != address(0));
+    require(_value <= balances[_from]);
+    require(_value <= allowed[_from][msg.sender]);
+
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    emit Transfer(_from, _to, _value);
+    return true;
+  }
+
+  /**
+   * @dev Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.
+   *
+   * Beware that changing an allowance with this method brings the risk that someone may use both the old
+   * and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this
+   * race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards:
+   * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   * @param _spender The address which will spend the funds.
+   * @param _value The amount of tokens to be spent.
+   */
+  function approve(address _spender, uint256 _value) public returns (bool) {
+    allowed[msg.sender][_spender] = _value;
+    emit Approval(msg.sender, _spender, _value);
+    return true;
+  }
+
+  /**
+   * @dev Function to check the amount of tokens that an owner allowed to a spender.
+   * @param _owner address The address which owns the funds.
+   * @param _spender address The address which will spend the funds.
+   * @return A uint256 specifying the amount of tokens still available for the spender.
+   */
+  function allowance(address _owner, address _spender) public view returns (uint256) {
+    return allowed[_owner][_spender];
+  }
+
+  /**
+   * @dev Increase the amount of tokens that an owner allowed to a spender.
+   *
+   * approve should be called when allowed[_spender] == 0. To increment
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _addedValue The amount of tokens to increase the allowance by.
+   */
+  function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
+    allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
+  /**
+   * @dev Decrease the amount of tokens that an owner allowed to a spender.
+   *
+   * approve should be called when allowed[_spender] == 0. To decrement
+   * allowed value is better to use this function to avoid 2 calls (and wait until
+   * the first transaction is mined)
+   * From MonolithDAO Token.sol
+   * @param _spender The address which will spend the funds.
+   * @param _subtractedValue The amount of tokens to decrease the allowance by.
+   */
+  function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
+    uint oldValue = allowed[msg.sender][_spender];
+    if (_subtractedValue > oldValue) {
+      allowed[msg.sender][_spender] = 0;
+    } else {
+      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+    }
+    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    return true;
+  }
+
+}
+
 
 /**
  *
  * Lynked World LYNK Token
- * Creation Date : 09-Aug-2018
- * by Saravana, TokenSafe.io
  *
  */
 
@@ -18,33 +231,48 @@ contract LYNKToken is StandardToken {
     uint8  public constant decimals = 18;                  
 
     /*
+    * mainnet settings
+    */
+    // uint public constant icoEndDate         = 1549796400;  // 10-Feb-2019 11:00:00 GMT 
+    // uint public constant rewardStartDate    = 1559347200;  // 01-Jun-2019 00:00:00 GMT
+    // uint public constant SECONDS_IN_YEAR    = 31536000;    //  60 * 60 * 24 * 365 
+
+
+    /*
     * test settings
     */
-    uint public constant icoEndDate         = 1533859199;  // 09-Aug-2018 23:59:59 GMT 
-    uint public constant SECONDS_IN_YEAR    = 172800;        //  60 * 60 * 24 * 2 = 2 days
-
-    uint constant addressLock   = 1;   // founders, advisors and team
-    uint constant addressNoLock = 2;   // marketing, ICO investors 
+    uint public constant icoEndDate         = 1536426000;  // 08-Sep-2018 22:30:00 IST 
+    uint public constant rewardStartDate    = 1536429600;  // 08-Sep-2018 23:30:00 IST
+    uint public constant SECONDS_IN_YEAR    = 1800;        //  60 * 30 mins 
 
 
-    // flag for emergency stop or start 
-    bool  public halted      = false;              
-    uint256  public tokenSold  = 0;
-    uint256  public etherRaised = 0;
-
-
+    uint constant addressLock   = 1;   // founders
+    uint constant addressNoLock = 2;   // marketing, ICO investors, advisors  
+    bool  public halted      = false;  // flag for emergency stop or start 
+            
     uint256 public INITIAL_SUPPLY          = 500000000 * (10 ** uint256(decimals));  // 500,000,000 (500m)
 
     // tokens allocation details
     uint256  public tokensRewardsPool      = 300000000 * (10 ** uint256(decimals));   //300,000,000 - (300M) 
-
     uint256  public tokensAdvisorsTeam     =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M ) - lock 50% after 6 months
     uint256  public tokensSeedInvestors    =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )
-    uint256  public tokensMarketingBounty  =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )
-    
+    uint256  public tokensMarketingBounty  =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )   
     uint256  public tokensFounders         =  20000000 * (10 ** uint256(decimals));   // 20,000,000 - (20M) - lock 50% after 6 months
     uint256  public tokensICO              = 150000000 * (10 ** uint256(decimals));  // 150,000,000 - (150M) 
 
+	uint256  public tokensYear1Reward      =   5000000 * (10 ** uint256(decimals)); //   5,000,000.00  (5m)	 
+	uint256  public tokensYear2Reward	   =  16000000 * (10 ** uint256(decimals)); //  16,000,000.00  (16m)	 
+	uint256  public tokensYear3Reward	   =  33500000 * (10 ** uint256(decimals));	//  33,500,000.00  (33.5m)
+	uint256  public tokensYear4Reward	   =  59000000 * (10 ** uint256(decimals)); //  59,000,000.00  (59m)	 
+	uint256  public tokensYear5Reward	   =  95500000 * (10 ** uint256(decimals)); //  95,500,000.00  (95m)	 
+	uint256  public tokensYear6Reward	   = 132000000 * (10 ** uint256(decimals)); //  132,000,000.00 (132m) 
+	uint256  public tokensYear7Reward	   = 168500000 * (10 ** uint256(decimals)); //  168,500,000.00 (168.5m)	 
+	uint256  public tokensYear8Reward	   = 205000000 * (10 ** uint256(decimals)); //  205,000,000.00 (205m) 	 
+	uint256  public tokensYear9Reward	   = 241000000 * (10 ** uint256(decimals)); //  241,000,000.00 (241m)	 
+	uint256  public tokensYear10Reward	   = 266500000 * (10 ** uint256(decimals)); //  266,500,000.00 (246.5m)	 
+	uint256  public tokensYear11Reward	   = 284000000 * (10 ** uint256(decimals)); //  284,000,000.00 (284m) 	 
+	uint256  public tokensYear12Reward	   = 295000000 * (10 ** uint256(decimals)); //  295,000,000.00 (295m)  	 
+	uint256  public tokensYear13Reward	   = 300000000 * (10 ** uint256(decimals)); //  300,000,000.00 (300m) 	 
 
     /*  
     *   the following are the testnet addresses
@@ -52,21 +280,19 @@ contract LYNKToken is StandardToken {
     *   before deploying the contract
     *   Note : rinkeby testnet addresses used here for testing
     */
-
   
-    address public addressRewardsPool      = 0x50207268ed986ffc756de2fb509c902557e902b4;     
-    address public addressAdvisorsTeam     = 0xdf7e584a74fff446a6141ae342078a828ae65d23;  
-    address public addressSeedInvestors    = 0x0afe6ededb967c7e0b189d7ce9375772be5fe59b;      
-    address public addressMarketingBounty  = 0x9fc1c2f53ebe62d481fb9a2a8a75b09ac7399781;  
-	address public addressFounders         = 0x1c59788d7113bbfe04280e3b60c03646d9e449fe; 
-    address public addressICOManager       = 0xe784a570e8aec7aab58eb23a7d4db257f11306ca; 
-     
+    address public addressRewardsPool      = 0x3EeF501b61A4Cb721B58411e44523298bC05Bf80;     
+    address public addressAdvisorsTeam     = 0x43e22E79E6585dD23cbF7BaaD9dFd59BEd508Ba4;  
+    address public addressSeedInvestors    = 0xE4E443893aa7D25C722E274134919280e4aC4934;      
+    address public addressMarketingBounty  = 0xFc3e8F5227dA923E76eb3A5ea4705292FBDC26F6;  
+	address public addressFounders         = 0x690481ADcA078d80269A0E3264305E0a6c1E2086; 
+    address public addressICOManager       = 0x9E3c8C4f01096924e661c201dFDcEDa4E6a5919c;    
 
     /*
     * Contract Constructor
     */
 
-    function LYNKToken() public {
+    constructor() public {
 
                      totalSupply_ = INITIAL_SUPPLY;              
 
@@ -81,8 +307,8 @@ contract LYNKToken is StandardToken {
                      emit Transfer(this, addressAdvisorsTeam,    tokensAdvisorsTeam);
                      emit Transfer(this, addressSeedInvestors,   tokensSeedInvestors);
                      emit Transfer(this, addressMarketingBounty, tokensMarketingBounty);
-                     emit Transfer(this, addressFounders,       tokensFounders);                     
-                     emit Transfer(this, addressICOManager,     tokensICO);  
+                     emit Transfer(this, addressFounders,        tokensFounders);                     
+                     emit Transfer(this, addressICOManager,      tokensICO);  
             }
     
     /**
@@ -141,22 +367,37 @@ contract LYNKToken is StandardToken {
 
    function transfer(address _to, uint256 _value) public returns (bool success) 
     {
+           // ICO mgr can transfer to ICO investors anytime
            if ( msg.sender == addressICOManager) { return super.transfer(_to, _value); }           
 
-           // Founders, Advisors and Team can transfer upto 50% of tokens after six months of ICO end date 
-           if ( !halted &&  msg.sender == addressFounders &&  SafeMath.sub(balances[msg.sender], _value) >= tokensFounders/2 && (now > icoEndDate + SECONDS_IN_YEAR/2) ) 
-                { return super.transfer(_to, _value); }         
-
-           if ( !halted &&  msg.sender == addressAdvisorsTeam &&  SafeMath.sub(balances[msg.sender], _value) >= tokensAdvisorsTeam/2 && (now > icoEndDate + SECONDS_IN_YEAR/2) ) 
-                { return super.transfer(_to, _value); }         
-
-           
            // ICO investors can transfer after the ICO period
            if ( !halted && identifyAddress(msg.sender) == addressNoLock && now > icoEndDate ) { return super.transfer(_to, _value); }
-           
-           // All can transfer after a year from ICO end date 
-           if ( !halted && now > icoEndDate + SECONDS_IN_YEAR) { return super.transfer(_to, _value); }
 
+           // Founders can transfer upto 50% of tokens after six months of ICO end date 
+           if ( !halted &&  msg.sender == addressFounders &&  
+                 SafeMath.sub(balances[msg.sender], _value) >= SafeMath.div(tokensFounders,2) && 
+                 (now > SafeMath.add(icoEndDate, SafeMath.div(SECONDS_IN_YEAR,2)) )) 
+                { return super.transfer(_to, _value); }         
+           
+           // Transfers from RewardPool
+		   if ( !halted && msg.sender == addressRewardsPool && now > rewardStartDate ){
+		   		if ( yearsFromICO() == 1  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear1Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 2  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear2Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 3  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear3Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 4  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear4Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 5  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear5Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 6  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear6Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 7  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear7Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 8  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear8Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 9  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear9Reward  )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 10 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear10Reward )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 11 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear11Reward )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() == 12 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear12Reward )  { return super.transfer(_to, _value); }   
+		   		if ( yearsFromICO() >= 13 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear13Reward )  { return super.transfer(_to, _value); }   
+		     } else if (!halted && now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
+		   			{ 
+		   				return super.transfer(_to, _value); 
+		   			}
         return false;
     }
 
@@ -165,35 +406,57 @@ contract LYNKToken is StandardToken {
     {
            if ( msg.sender == addressICOManager) { return super.transferFrom(_from,_to, _value); }
 
-           // Founders, Advisors and Team can transfer upto 50% of tokens after six months of ICO end date 
-
-           if ( !halted &&  msg.sender == addressFounders &&  SafeMath.sub(balances[msg.sender], _value) >= tokensFounders/2 && (now > icoEndDate + SECONDS_IN_YEAR/2) )
-                { return super.transferFrom(_from,_to, _value); }
-
-           if ( !halted &&  msg.sender == addressAdvisorsTeam &&  SafeMath.sub(balances[msg.sender], _value) >= tokensAdvisorsTeam/2 && (now > icoEndDate + SECONDS_IN_YEAR/2) ) 
-                { return super.transferFrom(_from,_to, _value); }
-
-           
            // ICO investors can transfer after the ICO period
            if ( !halted && identifyAddress(msg.sender) == addressNoLock && now > icoEndDate ) { return super.transferFrom(_from,_to, _value); }
 
-           // All can transfer after a year from ICO end date 
-           if ( !halted && now > icoEndDate + SECONDS_IN_YEAR) { return super.transferFrom(_from,_to, _value); }
+           // Founders can transfer upto 50% of tokens after six months of ICO end date 
+           if ( !halted &&  msg.sender == addressFounders &&  
+                 SafeMath.sub(balances[msg.sender], _value) >= SafeMath.div(tokensFounders,2) && 
+                 (now > SafeMath.add(icoEndDate, SafeMath.div(SECONDS_IN_YEAR,2)) ))
+                   { return super.transferFrom(_from,_to, _value); }
 
+		   if ( !halted && msg.sender == addressRewardsPool  && now > rewardStartDate ){
+		   		if ( yearsFromICO() == 1  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear1Reward  )  { return super.transferFrom(_from,_to, _value); }  
+		   		if ( yearsFromICO() == 2  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear2Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 3  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear3Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 4  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear4Reward  )  { return super.transferFrom(_from,_to, _value); }  
+		   		if ( yearsFromICO() == 5  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear5Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 6  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear6Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 7  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear7Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 8  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear8Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 9  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear9Reward  )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 10 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear10Reward )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 11 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear11Reward )  { return super.transferFrom(_from,_to, _value); }   
+		   		if ( yearsFromICO() == 12 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear12Reward )  { return super.transferFrom(_from,_to, _value); }  
+		   		if ( yearsFromICO() >= 13 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear13Reward )  { return super.transferFrom(_from,_to, _value); }   
+		     } else if (!halted && now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
+		   			{ 
+		   				 return super.transferFrom(_from,_to, _value);  
+		   			}
         return false;
     }
 
 
-   function identifyAddress(address _buyer) constant public returns(uint) {
-        if (_buyer == addressFounders    || _buyer == addressAdvisorsTeam) return addressLock;
+   function identifyAddress(address _buyer) constant internal returns(uint) {
+        if (_buyer == addressFounders    || _buyer == addressRewardsPool) return addressLock;
             return addressNoLock;
+    }
+
+    //
+    // function to return the current year
+    //
+
+    function yearsFromICO() internal constant returns(uint)
+    {
+        uint yrs = SafeMath.div((now - rewardStartDate), SECONDS_IN_YEAR) + 1; 
+        return yrs;
     }
 
 
      /*
      *  default fall back function      
      */
-    function () payable public {
-              revert();
-            }
+    function () payable public { 
+            revert();
+    }
 }
