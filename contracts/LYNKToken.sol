@@ -281,12 +281,12 @@ contract LYNKToken is StandardToken {
     *   Note : rinkeby testnet addresses used here for testing
     */
   
-    address public addressRewardsPool      = 0x3EeF501b61A4Cb721B58411e44523298bC05Bf80;     
-    address public addressAdvisorsTeam     = 0x43e22E79E6585dD23cbF7BaaD9dFd59BEd508Ba4;  
-    address public addressSeedInvestors    = 0xE4E443893aa7D25C722E274134919280e4aC4934;      
-    address public addressMarketingBounty  = 0xFc3e8F5227dA923E76eb3A5ea4705292FBDC26F6;  
-	address public addressFounders         = 0x690481ADcA078d80269A0E3264305E0a6c1E2086; 
-    address public addressICOManager       = 0x9E3c8C4f01096924e661c201dFDcEDa4E6a5919c;    
+    address public addressRewardsPool      = 0x5221382588accb5f26ba1b3a2892ddb0cd3f855c;     
+    address public addressAdvisorsTeam     = 0x3524e3dadbaae2d0da1084a0c40545d5726b80f5;  
+    address public addressSeedInvestors    = 0x4435fe6748e01c2f001af24997c3ee76fba5498e;      
+    address public addressMarketingBounty  = 0x16d43c6a63a83d3138200f73927c6f72c2f4aff4;  
+	address public addressFounders         = 0x00872d6ed50537f760047d7494f2d4471b0dfc15; 
+    address public addressICOManager       = 0x69e99d71e42933296122f4d3693871925c883df9;    
 
     /*
     * Contract Constructor
