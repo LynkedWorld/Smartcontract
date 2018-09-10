@@ -233,20 +233,12 @@ contract LYNKToken is StandardToken {
     /*
     * mainnet settings
     */
-    // uint public constant icoEndDate         = 1549796400;  // 10-Feb-2019 11:00:00 GMT 
-    // uint public constant rewardStartDate    = 1559347200;  // 01-Jun-2019 00:00:00 GMT
-    // uint public constant SECONDS_IN_YEAR    = 31536000;    //  60 * 60 * 24 * 365 
+    uint public constant icoEndDate         = 1549796400;  // 10-Feb-2019 11:00:00 GMT 
+    uint public constant rewardStartDate    = 1559347200;  // 01-Jun-2019 00:00:00 GMT
+    uint public constant SECONDS_IN_YEAR    = 31536000;    //  60 * 60 * 24 * 365 
 
 
-    /*
-    * test settings
-    */
-    uint public constant icoEndDate         = 1536426000;  // 08-Sep-2018 22:30:00 IST 
-    uint public constant rewardStartDate    = 1536429600;  // 08-Sep-2018 23:30:00 IST
-    uint public constant SECONDS_IN_YEAR    = 1800;        //  60 * 30 mins 
-
-
-    uint constant addressLock   = 1;   // founders
+    uint constant addressLock   = 1;   // founders, rewards
     uint constant addressNoLock = 2;   // marketing, ICO investors, advisors  
     bool  public halted      = false;  // flag for emergency stop or start 
             
@@ -254,7 +246,7 @@ contract LYNKToken is StandardToken {
 
     // tokens allocation details
     uint256  public tokensRewardsPool      = 300000000 * (10 ** uint256(decimals));   //300,000,000 - (300M) 
-    uint256  public tokensAdvisorsTeam     =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M ) - lock 50% after 6 months
+    uint256  public tokensAdvisorsTeam     =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M ) 
     uint256  public tokensSeedInvestors    =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )
     uint256  public tokensMarketingBounty  =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )   
     uint256  public tokensFounders         =  20000000 * (10 ** uint256(decimals));   // 20,000,000 - (20M) - lock 50% after 6 months
@@ -275,18 +267,17 @@ contract LYNKToken is StandardToken {
 	uint256  public tokensYear13Reward	   = 300000000 * (10 ** uint256(decimals)); //  300,000,000.00 (300m) 	 
 
     /*  
-    *   the following are the testnet addresses
-    *   should be updated with mainnet address
-    *   before deploying the contract
-    *   Note : rinkeby testnet addresses used here for testing
+    *   multi-sign addresses
     */
   
-    address public addressRewardsPool      = 0x5221382588accb5f26ba1b3a2892ddb0cd3f855c;     
-    address public addressAdvisorsTeam     = 0x3524e3dadbaae2d0da1084a0c40545d5726b80f5;  
-    address public addressSeedInvestors    = 0x4435fe6748e01c2f001af24997c3ee76fba5498e;      
-    address public addressMarketingBounty  = 0x16d43c6a63a83d3138200f73927c6f72c2f4aff4;  
-	address public addressFounders         = 0x00872d6ed50537f760047d7494f2d4471b0dfc15; 
-    address public addressICOManager       = 0x69e99d71e42933296122f4d3693871925c883df9;    
+    address public addressRewardsPool      = 0x0339fbc9d643f9f8857b78d09646b65a68137ee1;     
+    address public addressAdvisorsTeam     = 0xa80f2667a7579b5b89da3fe5786325ce42af0fb1;  
+    address public addressSeedInvestors    = 0x48a174c654e11b690cc61102d6e37672ecf1501f;      
+    address public addressMarketingBounty  = 0xef91ff38abef1bcfa52e072cf31d2e0ac48de395;  
+	address public addressFounders         = 0x18d9c67e6c2f75ab55e2a81b09411f52e69d28aa; 
+    address public addressICOManager       = 0xcb0698cdb6b6ddcea7f52d6b36f3af90ac576760;    
+
+    address public addressICOAdmin	       = 0x363724383191f4211ccccde36ce96924db757592;    
 
     /*
     * Contract Constructor
@@ -316,13 +307,13 @@ contract LYNKToken is StandardToken {
     *
     */
 
-    function halt() onlyManager public{
-        require(msg.sender == addressICOManager);
+    function halt() onlyAdmin public{
+        require(msg.sender == addressICOAdmin);
         halted = true;
     }
 
-    function unhalt() onlyManager public {
-        require(msg.sender == addressICOManager);
+    function unhalt() onlyAdmin public {
+        require(msg.sender == addressICOAdmin);
         halted = false;
     }
 
@@ -342,9 +333,9 @@ contract LYNKToken is StandardToken {
         _;
     }
 
-    modifier onlyManager() {
+    modifier onlyAdmin() {
         // only ICO manager can do this action
-        require(msg.sender == addressICOManager);
+        require(msg.sender == addressICOAdmin);
         _;
     }
 
@@ -355,13 +346,8 @@ contract LYNKToken is StandardToken {
      * Prevent transfers until ICO period is over.
      * 
      * Transfer 
-     *    - Allow 50% after six months for Founders and Advisors
+     *    - Allow 50% after six months for Founders
      *    - Allow Investors and Others after ICO end date 
-     *
-     * Applicable tests:
-     *
-     * - Test restricted early transfer
-     * - Test transfer after restricted period
      */
 
 
