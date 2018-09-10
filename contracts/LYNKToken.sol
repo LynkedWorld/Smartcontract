@@ -277,7 +277,7 @@ contract LYNKToken is StandardToken {
 	address public addressFounders         = 0x18d9c67e6c2f75ab55e2a81b09411f52e69d28aa; 
     address public addressICOManager       = 0xcb0698cdb6b6ddcea7f52d6b36f3af90ac576760;    
 
-    address public addressICOAdmin	       = 0x363724383191f4211ccccde36ce96924db757592;    
+    address public addressICOAdmin	       = 0x4edfbbc02bbdfda94b225622cc77cd4826cd4bd6;    
 
     /*
     * Contract Constructor
