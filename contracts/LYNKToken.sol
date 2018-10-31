@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.4.25;
 
 
 /**
@@ -226,35 +226,35 @@ contract StandardToken is ERC20, BasicToken {
 
 contract LYNKToken is StandardToken {
 
-    string public constant name     = "Lynked.World Token"; 
-    string public constant symbol   = "LYNK";              
-    uint8  public constant decimals = 18;                  
+	string public constant name     = "Lynked.World Token"; 
+	string public constant symbol   = "LYNK";              
+	uint8  public constant decimals = 18;                  
 
-    /*
-    * mainnet settings
-    */
-    uint public constant icoEndDate         = 1549796400;  // 10-Feb-2019 11:00:00 GMT 
-    uint public constant rewardStartDate    = 1559347200;  // 01-Jun-2019 00:00:00 GMT
-    uint public constant SECONDS_IN_YEAR    = 31536000;    //  60 * 60 * 24 * 365 
+	/*
+	* mainnet settings
+	*/
+	uint public constant icoEndDate         = 1549796400;  // 10-Feb-2019 11:00:00 GMT 
+	uint public constant rewardStartDate    = 1559347200;  // 01-Jun-2019 00:00:00 GMT
+	uint public constant SECONDS_IN_YEAR    = 31536000;    //  60 * 60 * 24 * 365 
 
 
-    uint constant addressLock   = 1;   // founders, rewards
-    uint constant addressNoLock = 2;   // marketing, ICO investors, advisors  
-    bool  public halted      = false;  // flag for emergency stop or start 
-            
-    uint256 public INITIAL_SUPPLY          = 500000000 * (10 ** uint256(decimals));  // 500,000,000 (500m)
+	uint constant addressLock   = 1;   // founders, rewards
+	uint constant addressNoLock = 2;   // marketing, ICO investors, advisors  
+	bool  public halted      = false;  // flag for emergency stop or start 
 
-    // tokens allocation details
-    uint256  public tokensRewardsPool      = 300000000 * (10 ** uint256(decimals));   //300,000,000 - (300M) 
-    uint256  public tokensAdvisorsTeam     =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M ) 
-    uint256  public tokensSeedInvestors    =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )
-    uint256  public tokensMarketingBounty  =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )   
-    uint256  public tokensFounders         =  20000000 * (10 ** uint256(decimals));   // 20,000,000 - (20M) - lock 50% after 6 months
-    uint256  public tokensICO              = 150000000 * (10 ** uint256(decimals));  // 150,000,000 - (150M) 
+	uint256 public INITIAL_SUPPLY          = 500000000 * (10 ** uint256(decimals));  // 500,000,000 (500m)
 
-	uint256  public tokensYear1Reward      =   5000000 * (10 ** uint256(decimals)); //   5,000,000.00  (5m)	 
+	// tokens allocation details
+	uint256  public tokensRewardsPool      = 300000000 * (10 ** uint256(decimals));   //300,000,000 - (300M) 
+	uint256  public tokensAdvisorsTeam     =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M ) 
+	uint256  public tokensSeedInvestors    =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )
+	uint256  public tokensMarketingBounty  =  10000000 * (10 ** uint256(decimals));   // 10,000,000 - (10M )   
+	uint256  public tokensFounders         =  20000000 * (10 ** uint256(decimals));   // 20,000,000 - (20M) - lock 50% after 6 months
+	uint256  public tokensICO              = 150000000 * (10 ** uint256(decimals));  // 150,000,000 - (150M) 
+
+	uint256  public tokensYear1Reward      =   5000000 * (10 ** uint256(decimals));     //   5,000,000.00  (5m)	 
 	uint256  public tokensYear2Reward	   =  16000000 * (10 ** uint256(decimals)); //  16,000,000.00  (16m)	 
-	uint256  public tokensYear3Reward	   =  33500000 * (10 ** uint256(decimals));	//  33,500,000.00  (33.5m)
+	uint256  public tokensYear3Reward	   =  33500000 * (10 ** uint256(decimals)); //  33,500,000.00  (33.5m)
 	uint256  public tokensYear4Reward	   =  59000000 * (10 ** uint256(decimals)); //  59,000,000.00  (59m)	 
 	uint256  public tokensYear5Reward	   =  95500000 * (10 ** uint256(decimals)); //  95,500,000.00  (95m)	 
 	uint256  public tokensYear6Reward	   = 132000000 * (10 ** uint256(decimals)); //  132,000,000.00 (132m) 
@@ -266,18 +266,31 @@ contract LYNKToken is StandardToken {
 	uint256  public tokensYear12Reward	   = 295000000 * (10 ** uint256(decimals)); //  295,000,000.00 (295m)  	 
 	uint256  public tokensYear13Reward	   = 300000000 * (10 ** uint256(decimals)); //  300,000,000.00 (300m) 	 
 
-    /*  
-    *   multi-sign addresses
-    */
-  
-    address public addressRewardsPool      = 0x0339fbc9d643f9f8857b78d09646b65a68137ee1;     
-    address public addressAdvisorsTeam     = 0xa80f2667a7579b5b89da3fe5786325ce42af0fb1;  
-    address public addressSeedInvestors    = 0x48a174c654e11b690cc61102d6e37672ecf1501f;      
-    address public addressMarketingBounty  = 0xef91ff38abef1bcfa52e072cf31d2e0ac48de395;  
-	address public addressFounders         = 0x18d9c67e6c2f75ab55e2a81b09411f52e69d28aa; 
-    address public addressICOManager       = 0xcb0698cdb6b6ddcea7f52d6b36f3af90ac576760;    
+	/*  
+	*   mainnet multi-sign addresses
+	*/
 
-    address public addressICOAdmin	       = 0x4edfbbc02bbdfda94b225622cc77cd4826cd4bd6;    
+	/*
+	address public addressRewardsPool      = 0x0339fbc9d643f9f8857b78d09646b65a68137ee1;     
+	address public addressAdvisorsTeam     = 0xa80f2667a7579b5b89da3fe5786325ce42af0fb1;  
+	address public addressSeedInvestors    = 0x48a174c654e11b690cc61102d6e37672ecf1501f;      
+	address public addressMarketingBounty  = 0xef91ff38abef1bcfa52e072cf31d2e0ac48de395;  
+	address public addressFounders         = 0x18d9c67e6c2f75ab55e2a81b09411f52e69d28aa; 
+	address public addressICOManager       = 0xcb0698cdb6b6ddcea7f52d6b36f3af90ac576760;    
+	*/
+
+	address public addressICOAdmin	       = 0x4edfbbc02bbdfda94b225622cc77cd4826cd4bd6;    
+
+	/*  
+	*   testnet multi-sign addresses
+	*/
+
+	address public addressRewardsPool      = 0x5221382588accb5f26ba1b3a2892ddb0cd3f855c;     
+	address public addressAdvisorsTeam     = 0x3524e3dadbaae2d0da1084a0c40545d5726b80f5;  
+	address public addressSeedInvestors    = 0x4435fe6748e01c2f001af24997c3ee76fba5498e;      
+	address public addressMarketingBounty  = 0x16d43c6a63a83d3138200f73927c6f72c2f4aff4;  
+	address public addressFounders         = 0x00872d6ed50537f760047d7494f2d4471b0dfc15; 
+	address public addressICOManager       = 0x69e99d71e42933296122f4d3693871925c883df9; 
 
     /*
     * Contract Constructor
@@ -356,8 +369,8 @@ contract LYNKToken is StandardToken {
            // ICO mgr can transfer to ICO investors anytime
            if ( msg.sender == addressICOManager) { return super.transfer(_to, _value); }           
 
-           // ICO investors can transfer after the ICO period
-           if ( !halted && identifyAddress(msg.sender) == addressNoLock && now > icoEndDate ) { return super.transfer(_to, _value); }
+           // ICO investors can transfer anytime
+           if ( !halted && identifyAddress(msg.sender) == addressNoLock  ) { return super.transfer(_to, _value); }
 
            // Founders can transfer upto 50% of tokens after six months of ICO end date 
            if ( !halted &&  msg.sender == addressFounders &&  
@@ -392,8 +405,8 @@ contract LYNKToken is StandardToken {
     {
            if ( msg.sender == addressICOManager) { return super.transferFrom(_from,_to, _value); }
 
-           // ICO investors can transfer after the ICO period
-           if ( !halted && identifyAddress(msg.sender) == addressNoLock && now > icoEndDate ) { return super.transferFrom(_from,_to, _value); }
+           // ICO investors can transfer anytime
+           if ( !halted && identifyAddress(msg.sender) == addressNoLock ) { return super.transferFrom(_from,_to, _value); }
 
            // Founders can transfer upto 50% of tokens after six months of ICO end date 
            if ( !halted &&  msg.sender == addressFounders &&  
