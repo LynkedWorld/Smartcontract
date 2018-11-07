@@ -366,20 +366,22 @@ contract LYNKToken is StandardToken {
 
    function transfer(address _to, uint256 _value) public returns (bool success) 
     {
-           // ICO mgr can transfer to ICO investors anytime
-           if ( msg.sender == addressICOManager) { return super.transfer(_to, _value); }           
+        // ICO mgr can transfer to ICO investors anytime
+        if ( msg.sender == addressICOManager) { return super.transfer(_to, _value); }           
 
+        if(!halted)
+        {
            // ICO investors can transfer anytime
-           if ( !halted && identifyAddress(msg.sender) == addressNoLock  ) { return super.transfer(_to, _value); }
+           if (identifyAddress(msg.sender) == addressNoLock  ) { return super.transfer(_to, _value); }
 
            // Founders can transfer upto 50% of tokens after six months of ICO end date 
-           if ( !halted &&  msg.sender == addressFounders &&  
+           if (msg.sender == addressFounders &&  
                  SafeMath.sub(balances[msg.sender], _value) >= SafeMath.div(tokensFounders,2) && 
                  (now > SafeMath.add(icoEndDate, SafeMath.div(SECONDS_IN_YEAR,2)) )) 
                 { return super.transfer(_to, _value); }         
            
            // Transfers from RewardPool
-		   if ( !halted && msg.sender == addressRewardsPool && now > rewardStartDate ){
+		   if (msg.sender == addressRewardsPool && now > rewardStartDate ){
 		   		if ( yearsFromICO() == 1  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear1Reward  )  { return super.transfer(_to, _value); }   
 		   		if ( yearsFromICO() == 2  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear2Reward  )  { return super.transfer(_to, _value); }   
 		   		if ( yearsFromICO() == 3  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear3Reward  )  { return super.transfer(_to, _value); }   
@@ -393,28 +395,32 @@ contract LYNKToken is StandardToken {
 		   		if ( yearsFromICO() == 11 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear11Reward )  { return super.transfer(_to, _value); }   
 		   		if ( yearsFromICO() == 12 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear12Reward )  { return super.transfer(_to, _value); }   
 		   		if ( yearsFromICO() >= 13 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear13Reward )  { return super.transfer(_to, _value); }   
-		     } else if (!halted && now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
+		     } else if (now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
 		   			{ 
 		   				return super.transfer(_to, _value); 
 		   			}
+        }
+        
         return false;
     }
 
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) 
     {
-           if ( msg.sender == addressICOManager) { return super.transferFrom(_from,_to, _value); }
-
+        if ( msg.sender == addressICOManager) { return super.transferFrom(_from,_to, _value); }
+ 
+        if(!halted)
+        {
            // ICO investors can transfer anytime
-           if ( !halted && identifyAddress(msg.sender) == addressNoLock ) { return super.transferFrom(_from,_to, _value); }
+           if (identifyAddress(msg.sender) == addressNoLock ) { return super.transferFrom(_from,_to, _value); }
 
            // Founders can transfer upto 50% of tokens after six months of ICO end date 
-           if ( !halted &&  msg.sender == addressFounders &&  
+           if (msg.sender == addressFounders &&  
                  SafeMath.sub(balances[msg.sender], _value) >= SafeMath.div(tokensFounders,2) && 
                  (now > SafeMath.add(icoEndDate, SafeMath.div(SECONDS_IN_YEAR,2)) ))
                    { return super.transferFrom(_from,_to, _value); }
 
-		   if ( !halted && msg.sender == addressRewardsPool  && now > rewardStartDate ){
+		   if (msg.sender == addressRewardsPool  && now > rewardStartDate ){
 		   		if ( yearsFromICO() == 1  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear1Reward  )  { return super.transferFrom(_from,_to, _value); }  
 		   		if ( yearsFromICO() == 2  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear2Reward  )  { return super.transferFrom(_from,_to, _value); }   
 		   		if ( yearsFromICO() == 3  && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear3Reward  )  { return super.transferFrom(_from,_to, _value); }   
@@ -428,15 +434,16 @@ contract LYNKToken is StandardToken {
 		   		if ( yearsFromICO() == 11 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear11Reward )  { return super.transferFrom(_from,_to, _value); }   
 		   		if ( yearsFromICO() == 12 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear12Reward )  { return super.transferFrom(_from,_to, _value); }  
 		   		if ( yearsFromICO() >= 13 && SafeMath.sub(balances[msg.sender], _value) >= tokensRewardsPool - tokensYear13Reward )  { return super.transferFrom(_from,_to, _value); }   
-		     } else if (!halted && now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
+		     } else if (now > icoEndDate + SECONDS_IN_YEAR && msg.sender != addressRewardsPool) 
 		   			{ 
 		   				 return super.transferFrom(_from,_to, _value);  
 		   			}
+        }
         return false;
     }
 
 
-   function identifyAddress(address _buyer) constant internal returns(uint) {
+   function identifyAddress(address _buyer)  internal view returns(uint) {
         if (_buyer == addressFounders    || _buyer == addressRewardsPool) return addressLock;
             return addressNoLock;
     }
@@ -445,17 +452,10 @@ contract LYNKToken is StandardToken {
     // function to return the current year
     //
 
-    function yearsFromICO() internal constant returns(uint)
+    function yearsFromICO() internal view returns(uint)
     {
         uint yrs = SafeMath.div((now - rewardStartDate), SECONDS_IN_YEAR) + 1; 
         return yrs;
     }
 
-
-     /*
-     *  default fall back function      
-     */
-    function () payable public { 
-            revert();
-    }
 }
