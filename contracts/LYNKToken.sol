@@ -19,7 +19,7 @@ library SafeMath {
     return c;
   }
 
-  /**
+ /**
   * @dev Integer division of two numbers, truncating the quotient.
   */
   function div(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -270,27 +270,14 @@ contract LYNKToken is StandardToken {
 	*   mainnet multi-sign addresses
 	*/
 
-	/*
 	address public addressRewardsPool      = 0x0339fbc9d643f9f8857b78d09646b65a68137ee1;     
 	address public addressAdvisorsTeam     = 0xa80f2667a7579b5b89da3fe5786325ce42af0fb1;  
 	address public addressSeedInvestors    = 0x48a174c654e11b690cc61102d6e37672ecf1501f;      
 	address public addressMarketingBounty  = 0xef91ff38abef1bcfa52e072cf31d2e0ac48de395;  
 	address public addressFounders         = 0x18d9c67e6c2f75ab55e2a81b09411f52e69d28aa; 
 	address public addressICOManager       = 0xcb0698cdb6b6ddcea7f52d6b36f3af90ac576760;    
-	*/
 
 	address public addressICOAdmin	       = 0x4edfbbc02bbdfda94b225622cc77cd4826cd4bd6;    
-
-	/*  
-	*   testnet multi-sign addresses
-	*/
-
-	address public addressRewardsPool      = 0x5221382588accb5f26ba1b3a2892ddb0cd3f855c;     
-	address public addressAdvisorsTeam     = 0x3524e3dadbaae2d0da1084a0c40545d5726b80f5;  
-	address public addressSeedInvestors    = 0x4435fe6748e01c2f001af24997c3ee76fba5498e;      
-	address public addressMarketingBounty  = 0x16d43c6a63a83d3138200f73927c6f72c2f4aff4;  
-	address public addressFounders         = 0x00872d6ed50537f760047d7494f2d4471b0dfc15; 
-	address public addressICOManager       = 0x69e99d71e42933296122f4d3693871925c883df9; 
 
     /*
     * Contract Constructor
@@ -301,7 +288,7 @@ contract LYNKToken is StandardToken {
                      totalSupply_ = INITIAL_SUPPLY;              
 
                      balances[addressRewardsPool]      = tokensRewardsPool;
-   					 balances[addressAdvisorsTeam]     = tokensAdvisorsTeam;
+   		     balances[addressAdvisorsTeam]     = tokensAdvisorsTeam;
                      balances[addressSeedInvestors]    = tokensSeedInvestors;
                      balances[addressMarketingBounty]  = tokensMarketingBounty;  
                      balances[addressFounders]         = tokensFounders;
